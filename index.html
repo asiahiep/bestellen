@@ -1,0 +1,1135 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#C8200A">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Asia Hanoi">
+<meta name="description" content="Asia Hanoi Imbiss – Online bestellen in Buxtehude">
+<link rel="manifest" href="#" id="manifestLink">
+<title>Asia Hanoi Imbiss</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════
+   TOKENS
+═══════════════════════════════════ */
+:root {
+  --red:    #C8200A;
+  --red2:   #E03018;
+  --red3:   #FF4422;
+  --gold:   #D4920A;
+  --gold2:  #F0AC18;
+  --bg:     #0E0704;
+  --s1:     #181008;
+  --s2:     #221608;
+  --s3:     #2E1E0C;
+  --border: rgba(255,255,255,0.08);
+  --white:  #FFF8F2;
+  --gray:   #8A7060;
+  --gray2:  #5A4030;
+  --green:  #1E9E50;
+  --r:      16px;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bot: env(safe-area-inset-bottom, 0px);
+}
+
+/* ═══════════════════════════════════
+   BASE
+═══════════════════════════════════ */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+html { height: 100%; overscroll-behavior: none; }
+
+body {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background: var(--bg);
+  color: var(--white);
+  height: 100%;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* ═══════════════════════════════════
+   INSTALL BANNER
+═══════════════════════════════════ */
+.install-banner {
+  display: none;
+  position: fixed;
+  top: calc(var(--safe-top) + 8px);
+  left: 12px; right: 12px;
+  z-index: 999;
+  background: var(--red);
+  border-radius: 14px;
+  padding: 12px 16px;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+  animation: slideDown 0.4s cubic-bezier(.22,.68,0,1.2);
+}
+.install-banner.show { display: flex; }
+@keyframes slideDown { from { transform:translateY(-20px); opacity:0; } to { transform:none; opacity:1; } }
+.install-banner-text { flex:1; font-size: 0.82rem; font-weight: 600; line-height: 1.4; }
+.install-banner-text span { font-weight: 300; opacity: 0.85; display: block; font-size: 0.72rem; }
+.install-btn {
+  background: white; color: var(--red);
+  border: none; border-radius: 8px;
+  padding: 7px 14px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.78rem; font-weight: 800;
+  cursor: pointer; white-space: nowrap;
+}
+.install-close {
+  background: rgba(255,255,255,0.2); border: none; color: white;
+  border-radius: 6px; width: 26px; height: 26px;
+  font-size: 0.9rem; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* ═══════════════════════════════════
+   APP SHELL
+═══════════════════════════════════ */
+.app {
+  display: flex; flex-direction: column;
+  height: 100vh;
+  padding-top: var(--safe-top);
+  padding-bottom: var(--safe-bot);
+}
+
+/* ── HEADER ── */
+.header {
+  flex-shrink: 0;
+  background: var(--s1);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 18px 12px;
+}
+.header-top {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px;
+}
+.brand { display: flex; align-items: center; gap: 10px; }
+.brand-icon {
+  width: 38px; height: 38px;
+  background: var(--red);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.3rem;
+  box-shadow: 0 2px 12px rgba(200,32,10,0.4);
+}
+.brand-name { font-size: 1.05rem; font-weight: 800; line-height: 1.1; }
+.brand-sub  { font-size: 0.65rem; color: var(--gray); font-weight: 400; margin-top: 1px; }
+.header-cart-btn {
+  position: relative;
+  background: var(--s3); border: 1px solid var(--border);
+  border-radius: 12px; padding: 9px 14px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.82rem; font-weight: 700; color: var(--white);
+  cursor: pointer; display: flex; align-items: center; gap: 6px;
+  transition: all 0.15s;
+}
+.header-cart-btn:active { transform: scale(0.95); }
+.hcart-badge {
+  background: var(--red); color: white;
+  border-radius: 50%; width: 18px; height: 18px;
+  font-size: 0.65rem; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* ── CATEGORY PILLS ── */
+.cat-scroll {
+  display: flex; gap: 7px;
+  overflow-x: auto; padding-bottom: 2px;
+  scrollbar-width: none;
+}
+.cat-scroll::-webkit-scrollbar { display: none; }
+.cat-pill {
+  flex-shrink: 0;
+  background: var(--s2); border: 1.5px solid transparent;
+  border-radius: 50px; padding: 6px 14px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.78rem; font-weight: 600; color: var(--gray);
+  cursor: pointer; transition: all 0.15s;
+  display: flex; align-items: center; gap: 5px;
+}
+.cat-pill.active {
+  background: rgba(200,32,10,0.15);
+  border-color: var(--red); color: var(--white);
+}
+
+/* ── MENU SCROLL ── */
+.menu-body {
+  flex: 1; overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 16px 14px 120px;
+  scroll-behavior: smooth;
+}
+.menu-body::-webkit-scrollbar { display: none; }
+
+/* ── SECTION ── */
+.menu-section { margin-bottom: 28px; }
+.section-label {
+  font-size: 0.7rem; font-weight: 700;
+  letter-spacing: 1.5px; text-transform: uppercase;
+  color: var(--gray); margin-bottom: 10px;
+  display: flex; align-items: center; gap: 8px;
+}
+.section-label::after {
+  content: ''; flex: 1; height: 1px;
+  background: var(--border);
+}
+
+/* ── ITEM CARD ── */
+.item-card {
+  background: var(--s1);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r);
+  padding: 14px;
+  margin-bottom: 8px;
+  display: flex; align-items: center; gap: 12px;
+  cursor: pointer; transition: all 0.15s;
+  position: relative; overflow: hidden;
+}
+.item-card:active { transform: scale(0.98); border-color: var(--red); }
+.item-card.in-cart { border-color: rgba(200,32,10,0.5); background: rgba(200,32,10,0.05); }
+
+.item-emoji {
+  width: 52px; height: 52px; flex-shrink: 0;
+  background: var(--s2); border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.8rem;
+}
+.item-info { flex: 1; min-width: 0; }
+.item-name { font-size: 0.9rem; font-weight: 700; line-height: 1.25; margin-bottom: 2px; }
+.item-desc { font-size: 0.72rem; color: var(--gray); line-height: 1.4; }
+.item-meta { display: flex; align-items: center; gap: 5px; margin-top: 5px; }
+.item-price { font-size: 0.95rem; font-weight: 800; color: var(--gold2); }
+.itag {
+  font-size: 0.58rem; font-weight: 700; border-radius: 4px;
+  padding: 1.5px 5px;
+}
+.itag-hot { background: rgba(200,32,10,0.2); color: #FF6644; }
+.itag-veg { background: rgba(30,158,80,0.2); color: #4AD880; }
+.itag-pop { background: rgba(212,146,10,0.2); color: var(--gold2); }
+
+.item-right { flex-shrink: 0; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+.add-btn {
+  background: var(--red); border: none;
+  border-radius: 10px; width: 34px; height: 34px;
+  color: white; font-size: 1.3rem; font-weight: 300;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s; line-height: 1;
+}
+.add-btn:active { background: var(--red2); transform: scale(0.88); }
+
+.qty-ctrl { display: flex; align-items: center; gap: 6px; }
+.qty-btn {
+  background: var(--s3); border: 1px solid var(--border);
+  border-radius: 8px; width: 30px; height: 30px;
+  color: white; font-size: 1rem; font-weight: 700;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: all 0.12s;
+}
+.qty-btn:active { background: var(--red); border-color: var(--red); }
+.qty-num { font-size: 0.9rem; font-weight: 800; min-width: 16px; text-align: center; }
+
+/* ── CART BAR ── */
+.cart-bar {
+  position: fixed;
+  bottom: calc(var(--safe-bot) + 10px);
+  left: 14px; right: 14px;
+  background: var(--red);
+  border-radius: 18px;
+  padding: 16px 18px;
+  display: flex; align-items: center; justify-content: space-between;
+  cursor: pointer;
+  box-shadow: 0 8px 32px rgba(200,32,10,0.45);
+  transition: all 0.2s;
+  z-index: 50;
+  transform: translateY(100px);
+  opacity: 0;
+}
+.cart-bar.visible { transform: none; opacity: 1; }
+.cart-bar:active { transform: scale(0.98); }
+.cb-left { display: flex; align-items: center; gap: 10px; }
+.cb-count {
+  background: rgba(0,0,0,0.25); border-radius: 8px;
+  padding: 4px 10px; font-size: 0.82rem; font-weight: 800;
+}
+.cb-label { font-size: 0.9rem; font-weight: 700; }
+.cb-total { font-size: 1rem; font-weight: 800; }
+
+/* ═══════════════════════════════════
+   CART SHEET
+═══════════════════════════════════ */
+.sheet-overlay {
+  position: fixed; inset: 0; z-index: 100;
+  background: rgba(0,0,0,0.6);
+  display: none; align-items: flex-end;
+  backdrop-filter: blur(4px);
+}
+.sheet-overlay.open { display: flex; }
+
+.sheet {
+  background: var(--s1);
+  border-radius: 24px 24px 0 0;
+  width: 100%;
+  max-height: 88vh;
+  display: flex; flex-direction: column;
+  padding-bottom: var(--safe-bot);
+  animation: sheetUp 0.35s cubic-bezier(.22,.68,0,1.2);
+}
+@keyframes sheetUp { from { transform: translateY(100%); } to { transform: none; } }
+
+.sheet-handle {
+  width: 36px; height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  margin: 12px auto 0;
+  cursor: pointer;
+}
+.sheet-header {
+  padding: 14px 20px 12px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.sheet-title { font-size: 1.05rem; font-weight: 800; }
+.sheet-close {
+  background: var(--s3); border: none; border-radius: 8px;
+  width: 30px; height: 30px; color: var(--gray);
+  font-size: 1rem; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.sheet-items { flex: 1; overflow-y: auto; padding: 12px 18px; }
+.sheet-items::-webkit-scrollbar { display: none; }
+
+.sheet-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 0; border-bottom: 1px solid var(--border);
+}
+.sheet-item:last-child { border-bottom: none; }
+.si-emoji { font-size: 1.4rem; flex-shrink: 0; }
+.si-info { flex: 1; min-width: 0; }
+.si-name { font-size: 0.85rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.si-price { font-size: 0.75rem; color: var(--gold2); font-weight: 600; margin-top: 1px; }
+.si-ctrl { display: flex; align-items: center; gap: 6px; }
+
+.sheet-empty {
+  text-align: center; padding: 40px 20px;
+  color: var(--gray); font-size: 0.9rem; line-height: 1.8;
+}
+
+/* NAME FORM */
+.name-form {
+  padding: 14px 18px;
+  border-top: 1px solid var(--border);
+  background: var(--s2);
+}
+.name-form label {
+  font-size: 0.72rem; font-weight: 700; color: var(--gray);
+  text-transform: uppercase; letter-spacing: 0.5px;
+  display: block; margin-bottom: 6px;
+}
+.name-input {
+  width: 100%; background: var(--s1);
+  border: 1.5px solid var(--border); border-radius: 12px;
+  padding: 11px 14px; color: var(--white);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.95rem; outline: none;
+  transition: border-color 0.15s;
+  margin-bottom: 10px;
+}
+.name-input:focus { border-color: var(--red); }
+.note-input {
+  width: 100%; background: var(--s1);
+  border: 1.5px solid var(--border); border-radius: 12px;
+  padding: 10px 14px; color: var(--white);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.85rem; outline: none; resize: none;
+  transition: border-color 0.15s; height: 60px;
+}
+.note-input:focus { border-color: var(--red); }
+
+/* SUMMARY & WHATSAPP BTN */
+.sheet-footer { padding: 12px 18px 0; }
+.summary-row {
+  display: flex; justify-content: space-between;
+  font-size: 0.82rem; color: var(--gray); margin-bottom: 4px;
+}
+.summary-total {
+  display: flex; justify-content: space-between;
+  font-size: 1rem; font-weight: 800;
+  padding-top: 8px; border-top: 1px solid var(--border);
+  margin-bottom: 12px;
+}
+.summary-total-price { color: var(--gold2); font-size: 1.1rem; }
+
+.wa-btn {
+  width: 100%;
+  background: #25D366;
+  border: none; border-radius: 14px;
+  padding: 16px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1rem; font-weight: 800; color: white;
+  cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+  transition: all 0.15s;
+  box-shadow: 0 4px 20px rgba(37,211,102,0.3);
+  margin-bottom: 10px;
+}
+.wa-btn:active { transform: scale(0.97); }
+.wa-btn:disabled { background: var(--gray2); box-shadow: none; cursor: not-allowed; }
+.wa-icon { font-size: 1.2rem; }
+
+.clear-btn {
+  width: 100%; background: transparent;
+  border: 1px solid var(--border); border-radius: 10px;
+  padding: 10px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.78rem; color: var(--gray); cursor: pointer;
+  transition: all 0.12s; margin-bottom: 8px;
+}
+.clear-btn:active { border-color: var(--red); color: var(--red); }
+
+/* ═══════════════════════════════════
+   INFO PAGE
+═══════════════════════════════════ */
+.info-page {
+  flex: 1; overflow-y: auto; padding: 20px 16px;
+  display: none;
+}
+.info-page.active { display: block; }
+
+.info-hero {
+  background: linear-gradient(135deg, var(--red) 0%, var(--red2) 100%);
+  border-radius: 20px; padding: 24px;
+  text-align: center; margin-bottom: 20px;
+}
+.info-hero-icon { font-size: 3rem; margin-bottom: 10px; }
+.info-hero h2 { font-size: 1.3rem; font-weight: 800; margin-bottom: 4px; }
+.info-hero p { font-size: 0.82rem; opacity: 0.85; }
+
+.info-card {
+  background: var(--s1); border: 1px solid var(--border);
+  border-radius: 16px; padding: 16px; margin-bottom: 12px;
+}
+.info-card h3 { font-size: 0.82rem; font-weight: 700; color: var(--gray); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+.info-row { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+.info-row:last-child { border-bottom: none; }
+.info-row-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
+.info-row-text { flex: 1; }
+.info-row-label { font-size: 0.72rem; color: var(--gray); margin-bottom: 1px; }
+.info-row-val { font-size: 0.88rem; font-weight: 600; }
+
+.how-step {
+  display: flex; gap: 12px; align-items: flex-start;
+  padding: 10px 0; border-bottom: 1px solid var(--border);
+}
+.how-step:last-child { border-bottom: none; }
+.how-num {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--red); color: white;
+  font-size: 0.75rem; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.how-text { flex: 1; }
+.how-title { font-size: 0.88rem; font-weight: 700; margin-bottom: 2px; }
+.how-desc { font-size: 0.75rem; color: var(--gray); line-height: 1.5; }
+
+/* ── BOTTOM NAV ── */
+.bottom-nav {
+  flex-shrink: 0;
+  background: var(--s1);
+  border-top: 1px solid var(--border);
+  display: flex;
+  padding: 8px 0 4px;
+}
+.nav-item {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;
+  padding: 6px 0; cursor: pointer; transition: all 0.15s;
+  background: none; border: none; font-family: 'Plus Jakarta Sans', sans-serif;
+}
+.nav-icon { font-size: 1.3rem; line-height: 1; }
+.nav-label { font-size: 0.62rem; font-weight: 600; color: var(--gray); }
+.nav-item.active .nav-label { color: var(--red); }
+.nav-dot {
+  width: 4px; height: 4px; border-radius: 50%;
+  background: var(--red); margin-top: -2px;
+  display: none;
+}
+.nav-item.active .nav-dot { display: block; }
+
+/* ── TOAST ── */
+.toast {
+  position: fixed; bottom: 90px; left: 50%;
+  transform: translateX(-50%) translateY(10px);
+  background: var(--green); color: white;
+  border-radius: 50px; padding: 10px 20px;
+  font-size: 0.82rem; font-weight: 700;
+  opacity: 0; pointer-events: none;
+  transition: all 0.25s; z-index: 200;
+  white-space: nowrap;
+  box-shadow: 0 4px 16px rgba(30,158,80,0.4);
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<div class="app" id="app">
+
+  <!-- INSTALL BANNER -->
+  <div class="install-banner" id="installBanner">
+    <div class="install-banner-text">
+      📱 App installieren
+      <span>Zum Startbildschirm hinzufügen</span>
+    </div>
+    <button class="install-btn" id="installBtn">Installieren</button>
+    <button class="install-close" onclick="closeBanner()">✕</button>
+  </div>
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-top">
+      <div class="brand">
+        <div class="brand-icon">🍜</div>
+        <div>
+          <div class="brand-name">Asia Hanoi Imbiss</div>
+          <div class="brand-sub">📍 Buxtehude · Di–So 12–21 Uhr</div>
+        </div>
+      </div>
+      <button class="header-cart-btn" onclick="openCart()">
+        🛒 <span id="hCartTotal">0,00 €</span>
+        <div class="hcart-badge" id="hCartBadge">0</div>
+      </button>
+    </div>
+    <div class="cat-scroll" id="catScroll"></div>
+  </div>
+
+  <!-- MENU PAGE -->
+  <div class="menu-body" id="menuPage">
+    <div id="menuContent"></div>
+  </div>
+
+  <!-- INFO PAGE -->
+  <div class="info-page" id="infoPage">
+    <div class="info-hero">
+      <div class="info-hero-icon">🍜</div>
+      <h2>Asia Hanoi Imbiss</h2>
+      <p>Frisch · Authentisch · Hausgemacht</p>
+    </div>
+
+    <div class="info-card">
+      <h3>Restaurant</h3>
+      <div class="info-row">
+        <div class="info-row-icon">📍</div>
+        <div class="info-row-text">
+          <div class="info-row-label">Adresse</div>
+          <div class="info-row-val">Hauptstraße 13, 21614 Buxtehude</div>
+        </div>
+      </div>
+      <div class="info-row">
+        <div class="info-row-icon">🕐</div>
+        <div class="info-row-text">
+          <div class="info-row-label">Öffnungszeiten</div>
+          <div class="info-row-val">Di – So: 12:00 – 21:00 Uhr<br><span style="font-size:0.78rem;color:var(--gray)">Montag: Ruhetag · Bestellschluss 20:00</span></div>
+        </div>
+      </div>
+      <div class="info-row">
+        <div class="info-row-icon">📞</div>
+        <div class="info-row-text">
+          <div class="info-row-label">Telefon</div>
+          <div class="info-row-val"><a href="tel:+494161000000" style="color:var(--gold2);text-decoration:none">04161 / 500969</a></div>
+        </div>
+      </div>
+      <div class="info-row">
+        <div class="info-row-icon">🌐</div>
+        <div class="info-row-text">
+          <div class="info-row-label">Website</div>
+          <div class="info-row-val"><a href="https://www.asiahanoiimbiss.online" target="_blank" style="color:var(--gold2);text-decoration:none">asiahanoiimbiss.online</a></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-card">
+      <h3>Lieferung & Abholung</h3>
+      <div class="info-row">
+        <div class="info-row-icon">🚗</div>
+        <div class="info-row-text">
+          <div class="info-row-label">Eigener Lieferdienst</div>
+          <div class="info-row-val">Mindestbestellwert 16 € · Liefergebühr 2 €</div>
+        </div>
+      </div>
+      <div class="info-row">
+        <div class="info-row-icon">⏱️</div>
+        <div class="info-row-text">
+          <div class="info-row-label">Lieferzeit</div>
+          <div class="info-row-val">ca. 30 – 45 Minuten</div>
+        </div>
+      </div>
+      <div class="info-row">
+        <div class="info-row-icon">💳</div>
+        <div class="info-row-text">
+          <div class="info-row-label">Zahlung</div>
+          <div class="info-row-val">Barzahlung</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-card">
+      <h3>So bestellen Sie</h3>
+      <div class="how-step">
+        <div class="how-num">1</div>
+        <div class="how-text">
+          <div class="how-title">Gerichte wählen</div>
+          <div class="how-desc">Im Menü Ihre Lieblingsgerichte antippen und in den Warenkorb legen.</div>
+        </div>
+      </div>
+      <div class="how-step">
+        <div class="how-num">2</div>
+        <div class="how-text">
+          <div class="how-title">Warenkorb öffnen</div>
+          <div class="how-desc">Namen und optionale Anmerkungen eingeben (z.B. Adresse für Lieferung).</div>
+        </div>
+      </div>
+      <div class="how-step">
+        <div class="how-num">3</div>
+        <div class="how-text">
+          <div class="how-title">Via WhatsApp senden</div>
+          <div class="how-desc">Mit einem Klick wird Ihre Bestellung fertig als WhatsApp-Nachricht an uns gesendet!</div>
+        </div>
+      </div>
+      <div class="how-step">
+        <div class="how-num">4</div>
+        <div class="how-text">
+          <div class="how-title">Bestätigung abwarten</div>
+          <div class="how-desc">Wir bestätigen Ihre Bestellung und geben die voraussichtliche Wartezeit durch.</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="text-align:center;padding:20px 0;color:var(--gray);font-size:0.75rem;line-height:1.8">
+      Alle Preise inkl. MwSt.<br>
+      🌶️ scharf &nbsp;·&nbsp; 🌿 vegetarisch &nbsp;·&nbsp; ⭐ Empfehlung
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <div class="bottom-nav">
+    <button class="nav-item active" id="navMenu" onclick="switchPage('menu')">
+      <span class="nav-icon">🍜</span>
+      <span class="nav-label">Speisekarte</span>
+      <div class="nav-dot"></div>
+    </button>
+    <button class="nav-item" id="navInfo" onclick="switchPage('info')">
+      <span class="nav-icon">ℹ️</span>
+      <span class="nav-label">Info</span>
+      <div class="nav-dot"></div>
+    </button>
+  </div>
+
+</div><!-- /app -->
+
+<!-- CART SHEET -->
+<div class="sheet-overlay" id="sheetOverlay" onclick="closeCartOutside(event)">
+  <div class="sheet" id="sheet">
+    <div class="sheet-handle" onclick="closeCart()"></div>
+    <div class="sheet-header">
+      <div class="sheet-title">🛒 Warenkorb</div>
+      <button class="sheet-close" onclick="closeCart()">✕</button>
+    </div>
+    <div class="sheet-items" id="sheetItems">
+      <div class="sheet-empty">Noch keine Gerichte gewählt 🥢</div>
+    </div>
+    <div class="name-form">
+      <label>Ihr Name *</label>
+      <input class="name-input" id="custName" type="text" placeholder="Max Mustermann" autocomplete="name">
+      <label>Anmerkung (optional)</label>
+      <textarea class="note-input" id="custNote" placeholder="Lieferadresse, Stockwerk, kein Koriander..."></textarea>
+    </div>
+    <div class="sheet-footer">
+      <div class="summary-row"><span>Zwischensumme</span><span id="sheetSub">0,00 €</span></div>
+      <div class="summary-row"><span>Lieferung</span><span>2,00 €</span></div>
+      <div class="summary-total">
+        <span>Gesamt</span>
+        <span class="summary-total-price" id="sheetTotal">0,00 €</span>
+      </div>
+      <button class="wa-btn" id="waBtn" onclick="sendWhatsApp()">
+        <span class="wa-icon">💬</span> Via WhatsApp bestellen
+      </button>
+      <button class="clear-btn" onclick="clearCart()">Warenkorb leeren</button>
+    </div>
+  </div>
+</div>
+
+<!-- FLOATING CART BAR -->
+<div class="cart-bar" id="cartBar" onclick="openCart()">
+  <div class="cb-left">
+    <div class="cb-count" id="cbCount">0</div>
+    <div class="cb-label">Warenkorb ansehen</div>
+  </div>
+  <div class="cb-total" id="cbTotal">0,00 €</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════
+// !! IMPORTANT — Hai: change this number !!
+// ═══════════════════════════════════════════════
+const WHATSAPP_NUMBER = '4915228406688'; // Format: 49 + Nummer ohne 0 (z.B. 491701234567)
+const DELIVERY_FEE = 2.00;
+const MIN_ORDER    = 18.00;
+
+// ═══════════════════════════════════════════════
+// MENU DATA
+// ═══════════════════════════════════════════════
+const MENU = [
+  { id:'mit', label:'Mittagsangebot', icon:'🌅', note:'Di–Fr 12–15 Uhr', items:[
+    {id:1,  n:'M1 – Ente Süß-Sauer',          d:'Mit Süß-Sauer Sauce',              p:11.30, e:'🦆'},
+    {id:2,  n:'M2 – Ente Pikant',              d:'Mit Pikante Sauce',                p:11.30, e:'🦆'},
+    {id:3,  n:'M3 – Kn. Hähnchen Pikant',      d:'Mit Pikante Sauce',                p:9.50,  e:'🍗', pop:true},
+    {id:4,  n:'M4 – Ente Chop Suey',           d:'Mit Gemüse',                       p:9.60,  e:'🦆'},
+    {id:5,  n:'M5 – Gebratenes Rind',          d:'Wok-gebraten',                     p:9.10,  e:'🥩'},
+    {id:6,  n:'M6 – Hühnerbrust Pikant',       d:'Mit Pikante Sauce',                p:8.60,  e:'🍗'},
+    {id:7,  n:'M7 – Hühnerbrust i. Teig',      d:'Im Teig, Pikante Sauce',           p:9.50,  e:'🍗'},
+    {id:8,  n:'M8 – Seelachsfilet Pikant',     d:'Mit Pikante Sauce',                p:10.10, e:'🐟'},
+    {id:9,  n:'M9 – Bratnudeln Kn. Hähnchen',  d:'Mit knusprigem Hähnchen',          p:9.50,  e:'🍜'},
+    {id:10, n:'M10 – Bratnudeln Hühner',       d:'Mit Hühnerfleisch',                p:8.80,  e:'🍜'},
+    {id:11, n:'M11 – Bratnudeln Kn. Ente',     d:'Mit knuspriger Ente',              p:11.30, e:'🍜'},
+    {id:12, n:'M12 – Bratreis Hühner',         d:'Gebratener Reis',                  p:8.80,  e:'🍚'},
+    {id:13, n:'M13 – Bratreis Hühner i. Teig', d:'Mit Hühnerbrust im Teig',          p:9.50,  e:'🍚'},
+    {id:14, n:'M14 – Bratreis Kn. Hähnchen',   d:'Mit knusprigem Hähnchen',          p:9.50,  e:'🍚'},
+    {id:15, n:'M15 – Schweinefleisch Pikant',  d:'Mit Pikante Sauce',                p:8.60,  e:'🥩'},
+    {id:16, n:'M16 – Hühner i. Teig S-S',      d:'Im Teig, Süß-Sauer Sauce',        p:9.50,  e:'🍗'},
+    {id:17, n:'M17 – Curry Huhn Thai',         d:'Thailändischer Art',               p:9.60,  e:'🍛'},
+    {id:18, n:'M18 – Kn. Hähnchen Süß-Sauer',  d:'Mit Süß-Sauer Sauce',             p:9.50,  e:'🍗'},
+    {id:19, n:'M19 – Ente Thai-Curry',         d:'Mit Thai-Curry Sauce',             p:11.30, e:'🦆'},
+    {id:20, n:'M20 – Hühnerfleisch Erdnuss',   d:'Mit Erdnuss Sauce',                p:9.60,  e:'🍗'},
+  ]},
+  { id:'sup', label:'Suppen', icon:'🍵', items:[
+    {id:101,n:'1 - Sauer-scharf-Suppe',  d:'Traditionell scharf und sauer', p:3.50,e:'🥣',hot:true},
+    {id:102,n:'2 - Krebssuppe',          d:'Aromatisch',                    p:4.20,e:'🦀'},
+    {id:103,n:'3 - Tomatensuppe',        d:'Frische Tomatensuppe',          p:4.20,e:'🍅'},
+    {id:104,n:'4 - Wan Tan Suppe',       d:'Mit gefüllten Wan Tan',         p:5.00,e:'🥟',pop:true},
+    {id:105,n:'5 - Nudelsuppe',          d:'Klare Brühe mit Nudeln',        p:4.20,e:'🍜'},
+    {id:106,n:'6 - Tom Kha Suppe',       d:'Thai-Kokossuppe',               p:5.20,e:'🥥'},
+    {id:107,n:'7 - Tom Yum Suppe',       d:'Scharf-saure Thai-Suppe',       p:5.50,e:'🍲',hot:true,pop:true},
+  ]},
+  { id:'vor', label:'Vorspeisen', icon:'🥗', items:[
+    {id:201,n:'11 - Frühlingsrollen "Hanoi"',   d:'Knusprig frittiert',     p:3.10,e:'🥟',pop:true},
+    {id:202,n:'12 - Yakitori Spieße',           d:'Japanese-Style, gegrillt',p:6.10,e:'🍢'},
+    {id:203,n:'13 - Garnelen im Teigmantel',    d:'Thailändischer Art',      p:6.10,e:'🦐'},
+    {id:204,n:'14 - Minifrühlingsrollen Veg.',  d:'Vegetarisch',             p:5.30,e:'🥟',veg:true},
+    {id:205,n:'15 - Gebackene Wan Tan',         d:'Mit Fleischfüllung',      p:6.30,e:'🥟'},
+    {id:206,n:'16 - Curry Samosa Veg.',         d:'Vegetarisch',             p:5.30,e:'🔺',veg:true},
+    {id:207,n:'17 - Mix Tüte',                  d:'Gemischte Vorspeisen',    p:7.20,e:'🎁',pop:true},
+  ]},
+  { id:'hue', label:'Hühner', icon:'🍗', items:[
+    {id:301,n:'20 - Hühnerfleisch Chop Suey',    d:'Mit Gemüse',          p:9.10,  e:'🍗'},
+    {id:302,n:'21 - Hühnerfleisch Erdnuss',      d:'Mit Gemüse',          p:9.60,  e:'🍗'},
+    {id:303,n:'22 - Hühnerfleisch Szechuan',     d:'Scharf',              p:9.30,  e:'🍗',hot:true},
+    {id:304,n:'23 - Kn. Hähnchen Pakchoy',       d:'Mit Pakchoy',         p:10.30, e:'🍗'},
+    {id:305,n:'24 - Kn. Hähnchen Pikant',        d:'Pikante Sauce',       p:10.10, e:'🍗',hot:true,pop:true},
+    {id:306,n:'25 - Hühnerbrust i. Teig Pikant', d:'Im Teig',             p:10.10, e:'🍗'},
+    {id:307,n:'26 - Hühnerbrust i.Teig Knobl.',  d:'Pikant',              p:10.20, e:'🍗'},
+    {id:308,n:'27 - Hühnerbrust Süß-Sauer',      d:'Im Teig',             p:10.10, e:'🍗'},
+    {id:309,n:'28 - Kn. Hähnchen Süß-Sauer',     d:'Süß-Sauer',           p:10.10, e:'🍗'},
+    {id:310,n:'31 - Curry Huhn Indisch',         d:'Indisches Curry',     p:9.60,  e:'🍛'},
+    {id:311,n:'32 - Hühnerbrust Erdnuss',        d:'Erdnuss Sauce',       p:10.30, e:'🍗'},
+  ]},
+  { id:'ente', label:'Ente', icon:'🦆', items:[
+    {id:601,n:'40 - Ente Süß-Sauer',       d:'Knusprig',          p:15.40,e:'🦆',pop:true},
+    {id:602,n:'41 - Ente Erdnuss Sauce',   d:'Erdnuss Sauce',     p:15.40,e:'🦆'},
+    {id:603,n:'42 - Ente Pikant Knoblauch',d:'Scharf',            p:15.40,e:'🦆',hot:true},
+    {id:604,n:'43 - Ente Cashewnüsse',     d:'Mit Cashew',        p:15.40,e:'🦆'},
+    {id:605,n:'44 - Entenstreifen Pakchoy',d:'Mit Gemüse',        p:13.10,e:'🦆'},
+    {id:606,n:'45 - Entenstreifen C. Suey',d:'Mit Gemüse',        p:13.00,e:'🦆'},
+    {id:607,n:'46 - Ente Curry Indisch',   d:'Curry Sauce',       p:15.40,e:'🦆'},
+    {id:608,n:'47 - Ente Pikante Sauce',   d:'Scharf',            p:15.40,e:'🦆',hot:true},
+    {id:609,n:'48 - Ente Thai-Curry',      d:'Thai Curry',        p:15.40,e:'🦆'},
+  ]},
+  { id:'rind', label:'Rind', icon:'🥩', items:[
+    {id:501,n:'50 - Rind Szechuan',           d:'Scharf',           p:10.60,e:'🥩',hot:true},
+    {id:502,n:'51 - Zweimal Gebrat. Rind',    d:'Doppelt gebraten', p:11.20,e:'🥩'},
+    {id:503,n:'52 - Rind Paprika & Bambus',   d:'Mit Paprika',      p:10.60,e:'🥩'},
+    {id:504,n:'53 - Rindercurry Indisch',     d:'Indisch',          p:11.40,e:'🍛'},
+    {id:505,n:'54 - Rindercurry Thai',        d:'Thai',             p:11.40,e:'🍛'},
+    {id:506,n:'55 - Rind Erdnuss Sauce',      d:'Erdnuss',          p:11.40,e:'🥩'},
+    {id:507,n:'56 - Sukiyaki Rind',           d:'Japanisch',        p:11.50,e:'🥩'},
+    {id:508,n:'57 - Rind mit Pakchoy',        d:'Mit Gemüse',       p:11.40,e:'🥩'},
+  ]},
+  { id:'sch', label:'Schwein', icon:'🐷', items:[
+    {id:401,n:'60 - Schwein Szechuan',         d:'Scharf',          p:9.30, e:'🥩',hot:true},
+    {id:402,n:'61 - Schwein mit Zwiebeln',     d:'Wok-gebraten',    p:9.60, e:'🥩'},
+    {id:403,n:'62 - Schweinebällchen S.-S.',   d:'Süß-Sauer',       p:10.00,e:'🥩'},
+    {id:404,n:'63 - Schwein Chop Suey',        d:'Mit Gemüse',      p:9.10, e:'🥩'},
+    {id:405,n:'64 - Zweimal Gebrat. Schwein',  d:'Doppelt',         p:10.00,e:'🥩'},
+    {id:406,n:'65 - Schwein Morchen & Bambus', d:'Klassisch',       p:9.90, e:'🥩'},
+    {id:407,n:'66 - Schwein Indisch',          d:'Curry Sauce',     p:9.60, e:'🥩'},
+    {id:408,n:'67 - Schwein mit Pakchoy',      d:'Mit Gemüse',      p:9.60, e:'🥩'},
+  ]},
+  { id:'fisch', label:'Fisch & Garnelen', icon:'🦐', items:[
+    {id:701,n:'70 - Seelachs Süß-Sauer',   d:'Knusprig',    p:11.20,e:'🐟'},
+    {id:702,n:'71 - Seelachs Pikant',      d:'Scharf',      p:11.20,e:'🐟'},
+    {id:703,n:'72 - Seelachs Thai',        d:'Thai Art',    p:11.60,e:'🐟'},
+    {id:704,n:'73 - Garnelen Süß-Sauer',   d:'Gebacken',    p:16.00,e:'🦐',pop:true},
+    {id:705,n:'74 - Garnelen Thai-Curry',  d:'Thai Curry',  p:16.50,e:'🦐'},
+  ]},
+  { id:'spez', label:'Spezialitäten', icon:'⭐', items:[
+    {id:801,n:'H1 – Halong Garnelen',   d:'Hausrezept', p:15.00,e:'🦐',pop:true},
+    {id:802,n:'H2 – Hanoi Thapcam',     d:'Hausrezept', p:14.70,e:'🍽️'},
+    {id:803,n:'H3 – Ente NEW',          d:'Neu',        p:15.10,e:'🦆',pop:true},
+    {id:804,n:'H4 – Kn. Hähnchen Erd.', d:'Erdnuss',    p:12.90,e:'🍗'},
+    {id:805,n:'H5 – Hanoi Curry',       d:'Hausrezept', p:12.40,e:'🍛'},
+    {id:806,n:'H6 – Halong Spez.',      d:'Hausrezept', p:14.80,e:'🍽️'},
+    {id:807,n:'H7 – Hanoi Ente',        d:'Spezial',    p:15.80,e:'🦆',pop:true},
+    {id:808,n:'H8 – Tom Xao',           d:'Hausrezept', p:17.00,e:'🦐'},
+    {id:809,n:'H9 – Thang Long Ente',   d:'Spezial',    p:15.20,e:'🦆'},
+    {id:810,n:'H10 – Hanoi NEW',        d:'Neu',        p:15.00,e:'🍽️'},
+    {id:811,n:'H11 – Ga Chien',         d:'Gebraten',   p:12.90,e:'🍗'},
+    {id:812,n:'H12 – Tom Thap Cam',     d:'Garnelen',   p:17.70,e:'🦐',pop:true},
+  ]},
+  { id:'veg', label:'Vegetarisch', icon:'🌿', items:[
+    {id:901,n:'80 - Tofu Tomatensauce', d:'Mit Tomate',  p:9.30,e:'🍅',veg:true},
+    {id:902,n:'81 - Tofu mit Gemüse',   d:'Frisch',      p:9.30,e:'🥦',veg:true},
+    {id:903,n:'82 - Bratreis Tofu',     d:'Gebratener Reis',p:9.60,e:'🍚',veg:true},
+    {id:904,n:'83 - Tofu Thai-Curry',   d:'Thai Curry',  p:9.60,e:'🍛',veg:true},
+    {id:905,n:'84 - Tofu Pakchoy',      d:'Mit Gemüse',  p:9.60,e:'🥬',veg:true},
+    {id:906,n:'85 - Bratnudeln Tofu',   d:'Gebratene Nudeln',p:9.60,e:'🍜',veg:true},
+    {id:907,n:'86 - Bratnudeln Gemüse', d:'Nur Gemüse',  p:6.70,e:'🍜',veg:true},
+    {id:908,n:'87 - Bratreis Gemüse',   d:'Nur Gemüse',  p:6.70,e:'🍚',veg:true},
+  ]},
+  { id:'nud', label:'Bratnudeln', icon:'🍜', items:[
+    {id:1001,n:'90 - Bratnudeln Kn. Hähnchen',d:'Knusprig',     p:10.10,e:'🍜',pop:true},
+    {id:1002,n:'91 - Bratnudeln Hühner',      d:'Hühnerfleisch',p:9.60, e:'🍜'},
+    {id:1003,n:'92 - Bratnudeln Schwein',     d:'Schwein',      p:9.60, e:'🍜'},
+    {id:1004,n:'93 - Bratnudeln Rind',        d:'Rindfleisch',  p:10.60,e:'🍜'},
+    {id:1005,n:'94 - Bratnudeln Fleisch-Mix', d:'Gemischt',     p:10.90,e:'🍜'},
+    {id:1006,n:'94 - Bratnudeln Garnelen',    d:'Garnelen',     p:12.60,e:'🍜'},
+    {id:1007,n:'96 - Bratnudeln Ente',        d:'Entenfleisch', p:12.10,e:'🍜'},
+    {id:1008,n:'98 - Bratnudeln Hühner Curry',d:'Mit Curry',    p:9.70, e:'🍜'},
+    {id:1009,n:'99 - Bratnudeln Hühner Teig', d:'Im Teig',      p:10.10,e:'🍜'},
+  ]},
+  { id:'reis', label:'Bratreis', icon:'🍚', items:[
+    {id:1101,n:'100 - Bratreis Kn. Hähnchen', d:'Knusprig',      p:10.10,e:'🍚',pop:true},
+    {id:1102,n:'101 - Bratreis Hühner',       d:'Hühnerfleisch', p:9.60, e:'🍚'},
+    {id:1103,n:'102 - Bratreis Schwein',      d:'Schwein',       p:9.60, e:'🍚'},
+    {id:1104,n:'103 - Bratreis Rind',         d:'Rindfleisch',   p:10.60,e:'🍚'},
+    {id:1105,n:'104 - Bratreis Fleisch-Mix',  d:'Gemischt',      p:10.90,e:'🍚'},
+    {id:1106,n:'105 - Bratreis Garnelen',     d:'Garnelen',      p:12.60,e:'🍚'},
+    {id:1107,n:'106 - Bratreis Ente',         d:'Entenfleisch',  p:12.10,e:'🍚'},
+    {id:1108,n:'108 - Bratreis Hühner Curry', d:'Mit Curry',     p:9.60, e:'🍚'},
+    {id:1109,n:'109 - Bratreis Hühner Teig',  d:'Im Teig',       p:10.10,e:'🍚'},
+  ]},
+  { id:'get', label:'Getränke', icon:'🥤', items:[
+    {id:1301,n:'D1 - Gebackene Banane',               d:'Mit Honig',         p:4.10,e:'🍌'},
+    {id:1302,n:'110 - Cola · Fanta · Sprite',         d:'Softdrinks 0,33l',  p:2.30,e:'🥤'},
+    {id:1303,n:'111 - Wasser · Eistee · Apfelschorle',d:'Erfrischungsgetr.', p:2.20,e:'💧'},
+    {id:1304,n:'113 - Asiatische Säfte 0,25l',        d:'Exotisch',          p:3.40,e:'🧃'},
+    {id:1305,n:'112 - Asiatische Biere',              d:'Auswahl',           p:3.60,e:'🍺'},
+    {id:1306,n:'114 - Deutsches Bier 0,33l',          d:'Deutsches Bier',    p:2.70,e:'🍺'},
+  ]},
+];
+
+// ═══════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════
+let cart = {};
+
+// ═══════════════════════════════════════════════
+// BUILD UI
+// ═══════════════════════════════════════════════
+function buildMenu() {
+  // Category pills
+  const scroll = document.getElementById('catScroll');
+  MENU.forEach((cat, i) => {
+    const pill = document.createElement('button');
+    pill.className = 'cat-pill' + (i === 0 ? ' active' : '');
+    pill.innerHTML = `${cat.icon} ${cat.label}`;
+    pill.onclick = () => scrollToSection(cat.id, pill);
+    scroll.appendChild(pill);
+  });
+
+  // Menu sections
+  const content = document.getElementById('menuContent');
+  MENU.forEach(cat => {
+    const sec = document.createElement('div');
+    sec.className = 'menu-section';
+    sec.id = 'sec-' + cat.id;
+    const note = cat.note ? ` <span style="color:var(--gold2);font-size:0.65rem;font-weight:600">${cat.note}</span>` : '';
+    sec.innerHTML = `<div class="section-label">${cat.icon} ${cat.label}${note}</div>`;
+    cat.items.forEach(item => {
+      sec.appendChild(makeCard(item));
+    });
+    content.appendChild(sec);
+  });
+}
+
+function makeCard(item) {
+  const card = document.createElement('div');
+  card.className = 'item-card';
+  card.id = 'card-' + item.id;
+  renderCard(card, item);
+  return card;
+}
+
+function renderCard(card, item) {
+  const qty = cart[item.id] || 0;
+  card.className = 'item-card' + (qty > 0 ? ' in-cart' : '');
+  const tags = [
+    item.pop ? '<span class="itag itag-pop">⭐ Empfehlung</span>' : '',
+    item.hot ? '<span class="itag itag-hot">🌶️ Scharf</span>' : '',
+    item.veg ? '<span class="itag itag-veg">🌿 Vegetarisch</span>' : '',
+  ].filter(Boolean).join('');
+
+  const ctrl = qty > 0
+    ? `<div class="qty-ctrl">
+        <button class="qty-btn" onclick="event.stopPropagation();chg(${item.id},-1)">−</button>
+        <span class="qty-num">${qty}</span>
+        <button class="qty-btn" onclick="event.stopPropagation();chg(${item.id},+1)">+</button>
+       </div>`
+    : `<button class="add-btn" onclick="event.stopPropagation();chg(${item.id},+1)">+</button>`;
+
+  card.innerHTML = `
+    <div class="item-emoji">${item.e}</div>
+    <div class="item-info">
+      <div class="item-name">${item.n}</div>
+      <div class="item-desc">${item.d}</div>
+      <div class="item-meta">
+        <span class="item-price">${fmt(item.p)}</span>
+        ${tags}
+      </div>
+    </div>
+    <div class="item-right">${ctrl}</div>`;
+  card.onclick = () => chg(item.id, +1);
+}
+
+function scrollToSection(catId, pill) {
+  document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active'));
+  pill.classList.add('active');
+  const sec = document.getElementById('sec-' + catId);
+  if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ═══════════════════════════════════════════════
+// CART LOGIC
+// ═══════════════════════════════════════════════
+function getItem(id) {
+  for (const cat of MENU) {
+    const f = cat.items.find(i => i.id === id);
+    if (f) return f;
+  }
+}
+function subtotal() {
+  return Object.entries(cart).reduce((s, [id, q]) => {
+    const it = getItem(+id);
+    return s + (it ? it.p * q : 0);
+  }, 0);
+}
+function totalQty() { return Object.values(cart).reduce((a, b) => a + b, 0); }
+function fmt(n) { return (n || 0).toFixed(2).replace('.', ',') + ' €'; }
+
+function chg(id, delta) {
+  cart[id] = (cart[id] || 0) + delta;
+  if (cart[id] <= 0) delete cart[id];
+  const item = getItem(id);
+  const card = document.getElementById('card-' + id);
+  if (card) renderCard(card, item);
+  if (delta > 0 && item) showToast(`✓ ${item.n}`);
+  updateCartUI();
+}
+
+function clearCart() {
+  Object.keys(cart).forEach(id => {
+    cart[id] = 0;
+    delete cart[id];
+    const card = document.getElementById('card-' + id);
+    const item = getItem(+id);
+    if (card && item) renderCard(card, item);
+  });
+  updateCartUI();
+  closeCart();
+}
+
+function updateCartUI() {
+  const qty = totalQty();
+  const sub = subtotal();
+  const total = sub + (sub > 0 ? DELIVERY_FEE : 0);
+
+  // Header badge
+  document.getElementById('hCartBadge').textContent = qty;
+  document.getElementById('hCartTotal').textContent = fmt(sub);
+
+  // Floating bar
+  const bar = document.getElementById('cartBar');
+  bar.classList.toggle('visible', qty > 0);
+  document.getElementById('cbCount').textContent = qty;
+  document.getElementById('cbTotal').textContent = fmt(total);
+
+  // Sheet
+  document.getElementById('sheetSub').textContent = fmt(sub);
+  document.getElementById('sheetTotal').textContent = fmt(total);
+
+  // Sheet items
+  const list = document.getElementById('sheetItems');
+  if (qty === 0) {
+    list.innerHTML = '<div class="sheet-empty">Noch keine Gerichte gewählt 🥢</div>';
+  } else {
+    list.innerHTML = Object.entries(cart).map(([id, q]) => {
+      const it = getItem(+id); if (!it) return '';
+      return `<div class="sheet-item">
+        <div class="si-emoji">${it.e}</div>
+        <div class="si-info">
+          <div class="si-name">${it.n}</div>
+          <div class="si-price">${fmt(it.p * q)}</div>
+        </div>
+        <div class="si-ctrl">
+          <button class="qty-btn" onclick="chg(${id},-1)">−</button>
+          <span class="qty-num">${q}</span>
+          <button class="qty-btn" onclick="chg(${id},+1)">+</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // WhatsApp button
+  const waBtn = document.getElementById('waBtn');
+  waBtn.disabled = sub < MIN_ORDER || qty === 0;
+  if (sub > 0 && sub < MIN_ORDER) {
+    waBtn.textContent = `Noch ${fmt(MIN_ORDER - sub)} bis Mindestbestellung`;
+  } else {
+    waBtn.innerHTML = '<span class="wa-icon">💬</span> Via WhatsApp bestellen';
+  }
+}
+
+// ═══════════════════════════════════════════════
+// WHATSAPP
+// ═══════════════════════════════════════════════
+function sendWhatsApp() {
+  const name = document.getElementById('custName').value.trim();
+  const note = document.getElementById('custNote').value.trim();
+  if (!name) {
+    document.getElementById('custName').focus();
+    document.getElementById('custName').style.borderColor = 'var(--red)';
+    setTimeout(() => document.getElementById('custName').style.borderColor = '', 2000);
+    showToast('Bitte Ihren Namen eingeben!');
+    return;
+  }
+
+  const sub = subtotal();
+  const total = sub + DELIVERY_FEE;
+
+  let msg = `🍜 *BESTELLUNG – Asia Hanoi Imbiss*\n`;
+  msg += `━━━━━━━━━━━━━━━━━━━━━\n`;
+  msg += `👤 *Name:* ${name}\n`;
+  if (note) msg += `📝 *Anmerkung:* ${note}\n`;
+  msg += `━━━━━━━━━━━━━━━━━━━━━\n`;
+  msg += `*Bestellte Gerichte:*\n`;
+
+  Object.entries(cart).forEach(([id, qty]) => {
+    const it = getItem(+id);
+    if (it) msg += `• ${qty}× ${it.n} — ${fmt(it.p * qty)}\n`;
+  });
+
+  msg += `━━━━━━━━━━━━━━━━━━━━━\n`;
+  msg += `Zwischensumme: ${fmt(sub)}\n`;
+  msg += `Liefergebühr: ${fmt(DELIVERY_FEE)}\n`;
+  msg += `*Gesamt: ${fmt(total)}*\n`;
+  msg += `━━━━━━━━━━━━━━━━━━━━━\n`;
+  msg += `Bitte bestätigen Sie meine Bestellung. Danke! 🙏`;
+
+  const encoded = encodeURIComponent(msg);
+  const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encoded}`;
+  window.open(url, '_blank');
+}
+
+// ═══════════════════════════════════════════════
+// CART SHEET
+// ═══════════════════════════════════════════════
+function openCart() {
+  document.getElementById('sheetOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeCart() {
+  document.getElementById('sheetOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function closeCartOutside(e) {
+  if (e.target === document.getElementById('sheetOverlay')) closeCart();
+}
+
+// ═══════════════════════════════════════════════
+// PAGE SWITCH
+// ═══════════════════════════════════════════════
+function switchPage(page) {
+  document.getElementById('menuPage').style.display = page === 'menu' ? 'block' : 'none';
+  document.getElementById('infoPage').classList.toggle('active', page === 'info');
+  document.getElementById('navMenu').classList.toggle('active', page === 'menu');
+  document.getElementById('navInfo').classList.toggle('active', page === 'info');
+  const bar = document.getElementById('cartBar');
+  bar.style.display = page === 'menu' ? '' : 'none';
+}
+
+// ═══════════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════════
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 1800);
+}
+
+// ═══════════════════════════════════════════════
+// PWA INSTALL
+// ═══════════════════════════════════════════════
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  document.getElementById('installBanner').classList.add('show');
+});
+document.getElementById('installBtn').onclick = async () => {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  deferredPrompt = null;
+  closeBanner();
+};
+function closeBanner() {
+  document.getElementById('installBanner').classList.remove('show');
+}
+
+// ═══════════════════════════════════════════════
+// PWA MANIFEST (inline)
+// ═══════════════════════════════════════════════
+const manifest = {
+  name: 'Asia Hanoi Imbiss',
+  short_name: 'Asia Hanoi',
+  description: 'Online bestellen bei Asia Hanoi Imbiss Buxtehude',
+  start_url: '/',
+  display: 'standalone',
+  background_color: '#0E0704',
+  theme_color: '#C8200A',
+  orientation: 'portrait',
+  icons: [
+    { src: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="%23C8200A"/><text y=".9em" font-size="80" x="10">🍜</text></svg>', sizes: '192x192', type: 'image/svg+xml' },
+    { src: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="%23C8200A"/><text y=".9em" font-size="80" x="10">🍜</text></svg>', sizes: '512x512', type: 'image/svg+xml' }
+  ]
+};
+const blob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+document.getElementById('manifestLink').href = URL.createObjectURL(blob);
+
+// ═══════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════
+buildMenu();
+updateCartUI();
+</script>
+</body>
+</html>

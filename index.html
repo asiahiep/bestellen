@@ -574,7 +574,7 @@ body {
         <div class="info-row-icon">💳</div>
         <div class="info-row-text">
           <div class="info-row-label">Zahlung</div>
-          <div class="info-row-val">Barzahlung</div>
+          <div class="info-row-val">Barzahlung · EC-Karte · PayPal</div>
         </div>
       </div>
     </div>
@@ -641,18 +641,41 @@ body {
       <div class="sheet-title">🛒 Warenkorb</div>
       <button class="sheet-close" onclick="closeCart()">✕</button>
     </div>
+
+    <!-- LIEFERUNG / ABHOLUNG TOGGLE -->
+    <div style="padding:10px 18px 0;display:flex;gap:8px;">
+      <button id="btnLieferung" onclick="setMode('lieferung')"
+        style="flex:1;padding:10px;border-radius:10px;border:2px solid var(--red);background:var(--red);color:#fff;font-family:'Plus Jakarta Sans',sans-serif;font-size:0.85rem;font-weight:700;cursor:pointer;">
+        🚗 Lieferung
+      </button>
+      <button id="btnAbholung" onclick="setMode('abholung')"
+        style="flex:1;padding:10px;border-radius:10px;border:2px solid var(--border);background:var(--s2);color:var(--gray);font-family:'Plus Jakarta Sans',sans-serif;font-size:0.85rem;font-weight:700;cursor:pointer;">
+        🏠 Abholung
+      </button>
+    </div>
+    <div id="modeInfo" style="padding:6px 18px 4px;font-size:0.72rem;color:var(--gold2);font-weight:500;"></div>
+
     <div class="sheet-items" id="sheetItems">
       <div class="sheet-empty">Noch keine Gerichte gewählt 🥢</div>
     </div>
+
     <div class="name-form">
       <label>Ihr Name *</label>
       <input class="name-input" id="custName" type="text" placeholder="Max Mustermann" autocomplete="name">
+      <label id="addressLabel">Lieferadresse *</label>
+      <input class="name-input" id="custAddress" type="text" placeholder="Straße, Hausnr., PLZ" autocomplete="street-address">
       <label>Anmerkung (optional)</label>
-      <textarea class="note-input" id="custNote" placeholder="Lieferadresse, Stockwerk, kein Koriander..."></textarea>
+      <textarea class="note-input" id="custNote" placeholder="Stockwerk, kein Koriander, Wünsche..."></textarea>
     </div>
+
     <div class="sheet-footer">
-      <div class="summary-row"><span>Zwischensumme</span><span id="sheetSub">0,00 €</span></div>
-      <div class="summary-row"><span>Lieferung</span><span>2,00 €</span></div>
+      <div class="summary-row"><span>Speisen</span><span id="sheetSub">0,00 €</span></div>
+      <div class="summary-row" id="rowSurcharge" style="display:none;color:var(--gold2)">
+        <span>Mindestbestellwert-Ausgleich</span><span id="sheetSurcharge">0,00 €</span>
+      </div>
+      <div class="summary-row" id="rowDelivery" style="display:none">
+        <span>Liefergebühr</span><span>2,00 €</span>
+      </div>
       <div class="summary-total">
         <span>Gesamt</span>
         <span class="summary-total-price" id="sheetTotal">0,00 €</span>
@@ -660,6 +683,7 @@ body {
       <button class="wa-btn" id="waBtn" onclick="sendWhatsApp()">
         <span class="wa-icon">💬</span> Via WhatsApp bestellen
       </button>
+
       <button class="clear-btn" onclick="clearCart()">Warenkorb leeren</button>
     </div>
   </div>
@@ -681,15 +705,17 @@ body {
 // !! IMPORTANT — Hai: change this number !!
 // ═══════════════════════════════════════════════
 const WHATSAPP_NUMBER = '4915228406688'; // Format: 49 + Nummer ohne 0 (z.B. 491701234567)
-const DELIVERY_FEE = 2.00;
-const MIN_ORDER    = 16.00;
+const DELIVERY_FEE  = 2.00;
+const MIN_ORDER     = 16.00;
+const SURCHARGE_ID  = 'MINDEST_AUSGLEICH'; // virtual item id for top-up
+let   deliveryMode  = 'lieferung'; // 'lieferung' | 'abholung'
 
 // ═══════════════════════════════════════════════
 // MENU DATA
 // ═══════════════════════════════════════════════
 const MENU = [
   { id:'mit', label:'Mittagsangebot', icon:'🌅', note:'Di–Fr 12–15 Uhr', items:[
-    {id:1,  n:'M1 – Ente Süß-Sauer',          d:'Mit Süß-Sauer Sauce',              p:11.30, e:'🦆'},
+    {id:1,  n:'M1 – Ente Süß-Sauer',           d:'Mit Süß-Sauer Sauce',              p:11.30, e:'🦆'},
     {id:2,  n:'M2 – Ente Pikant',              d:'Mit Pikante Sauce',                p:11.30, e:'🦆'},
     {id:3,  n:'M3 – Kn. Hähnchen Pikant',      d:'Mit Pikante Sauce',                p:9.50,  e:'🍗', pop:true},
     {id:4,  n:'M4 – Ente Chop Suey',           d:'Mit Gemüse',                       p:9.60,  e:'🦆'},
@@ -704,9 +730,9 @@ const MENU = [
     {id:13, n:'M13 – Bratreis Hühner i. Teig', d:'Mit Hühnerbrust im Teig',          p:9.50,  e:'🍚'},
     {id:14, n:'M14 – Bratreis Kn. Hähnchen',   d:'Mit knusprigem Hähnchen',          p:9.50,  e:'🍚'},
     {id:15, n:'M15 – Schweinefleisch Pikant',  d:'Mit Pikante Sauce',                p:8.60,  e:'🥩'},
-    {id:16, n:'M16 – Hühner i. Teig S-S',      d:'Im Teig, Süß-Sauer Sauce',        p:9.50,  e:'🍗'},
+    {id:16, n:'M16 – Hühner i. Teig S-S',      d:'Im Teig, Süß-Sauer Sauce',         p:9.50,  e:'🍗'},
     {id:17, n:'M17 – Curry Huhn Thai',         d:'Thailändischer Art',               p:9.60,  e:'🍛'},
-    {id:18, n:'M18 – Kn. Hähnchen Süß-Sauer',  d:'Mit Süß-Sauer Sauce',             p:9.50,  e:'🍗'},
+    {id:18, n:'M18 – Kn. Hähnchen Süß-Sauer',  d:'Mit Süß-Sauer Sauce',              p:9.50,  e:'🍗'},
     {id:19, n:'M19 – Ente Thai-Curry',         d:'Mit Thai-Curry Sauce',             p:11.30, e:'🦆'},
     {id:20, n:'M20 – Hühnerfleisch Erdnuss',   d:'Mit Erdnuss Sauce',                p:9.60,  e:'🍗'},
   ]},
@@ -714,8 +740,8 @@ const MENU = [
     {id:101,n:'1 - Sauer-scharf-Suppe',  d:'Traditionell scharf und sauer', p:3.50,e:'🥣',hot:true},
     {id:102,n:'2 - Krebssuppe',          d:'Aromatisch',                    p:4.20,e:'🦀'},
     {id:103,n:'3 - Tomatensuppe',        d:'Frische Tomatensuppe',          p:4.20,e:'🍅'},
-    {id:104,n:'4 - Wan Tan Suppe',       d:'Mit gefüllten Wan Tan',         p:5.00,e:'🥟',pop:true},
-    {id:105,n:'5 - Nudelsuppe',          d:'Klare Brühe mit Nudeln',        p:4.20,e:'🍜'},
+    {id:104,n:'4 - Wan Tan Suppe',       d:'Mit gefüllten Wan Tan',         p:5.00,e:'🥟'},
+    {id:105,n:'5 - Nudelsuppe',          d:'Klare Brühe mit Nudeln',        p:4.20,e:'🍜',pop:true},
     {id:106,n:'6 - Tom Kha Suppe',       d:'Thai-Kokossuppe',               p:5.20,e:'🥥'},
     {id:107,n:'7 - Tom Yum Suppe',       d:'Scharf-saure Thai-Suppe',       p:5.50,e:'🍲',hot:true,pop:true},
   ]},
@@ -735,7 +761,7 @@ const MENU = [
     {id:304,n:'23 - Kn. Hähnchen Pakchoy',       d:'Mit Pakchoy',         p:10.30, e:'🍗'},
     {id:305,n:'24 - Kn. Hähnchen Pikant',        d:'Pikante Sauce',       p:10.10, e:'🍗',pop:true},
     {id:306,n:'25 - Hühnerbrust i. Teig Pikant', d:'Im Teig',             p:10.10, e:'🍗'},
-    {id:307,n:'26 - Hühnerbrust i.Teig Knobl.',  d:'Pikant',              p:10.20, e:'🍗'},
+    {id:307,n:'26 - Hühnerbrust i. Teig Knobl.', d:'Pikant',              p:10.20, e:'🍗'},
     {id:308,n:'27 - Hühnerbrust Süß-Sauer',      d:'Im Teig',             p:10.10, e:'🍗'},
     {id:309,n:'28 - Kn. Hähnchen Süß-Sauer',     d:'Süß-Sauer',           p:10.10, e:'🍗'},
     {id:310,n:'31 - Curry Huhn Indisch',         d:'Indisches Curry',     p:9.60,  e:'🍛'},
@@ -750,24 +776,26 @@ const MENU = [
     {id:606,n:'45 - Entenstreifen C. Suey',d:'Mit Gemüse',        p:13.00,e:'🦆'},
     {id:607,n:'46 - Ente Curry Indisch',   d:'Curry Sauce',       p:15.40,e:'🦆'},
     {id:608,n:'47 - Ente Pikante Sauce',   d:'Scharf',            p:15.40,e:'🦆',pop:true},
-    {id:609,n:'48 - Ente Thai-Curry',      d:'Thai Curry',        p:15.40,e:'🦆',hot:true},
+    {id:609,n:'48 - Ente Thai-Curry',      d:'Thai Curry',        p:15.40,e:'🦆',pop:true,hot:true},
   ]},
   { id:'rind', label:'Rind', icon:'🥩', items:[
     {id:501,n:'50 - Rind Szechuan',           d:'Scharf',           p:10.60,e:'🥩',hot:true},
     {id:502,n:'51 - Zweimal Gebrat. Rind',    d:'Doppelt gebraten', p:11.20,e:'🥩'},
     {id:503,n:'52 - Rind Paprika & Bambus',   d:'Mit Paprika',      p:10.60,e:'🥩'},
     {id:504,n:'53 - Rindercurry Indisch',     d:'Indisch',          p:11.40,e:'🍛'},
-    {id:505,n:'54 - Rindercurry Thai',        d:'Thai',             p:11.40,e:'🍛'},
+    {id:505,n:'54 - Rindercurry Thai',        d:'Thai',             p:11.40,e:'🍛',hot:true},
     {id:506,n:'55 - Rind Erdnuss Sauce',      d:'Erdnuss',          p:11.40,e:'🥩'},
     {id:507,n:'56 - Sukiyaki Rind',           d:'Japanisch',        p:11.50,e:'🥩'},
     {id:508,n:'57 - Rind mit Pakchoy',        d:'Mit Gemüse',       p:11.40,e:'🥩'},
+    {id:509,n:'58 - Rind Morchen & Bambus',   d:'Klassisch',        p:11.40,e:'🥩'},
+    {id:560,n:'59 - Rind mit Zwiebeln',       d:'Wok-gebraten',     p:11.10,e:'🥩',pop:true},
   ]},
   { id:'sch', label:'Schwein', icon:'🐷', items:[
     {id:401,n:'60 - Schwein Szechuan',         d:'Scharf',          p:9.30, e:'🥩',hot:true},
     {id:402,n:'61 - Schwein mit Zwiebeln',     d:'Wok-gebraten',    p:9.60, e:'🥩'},
     {id:403,n:'62 - Schweinebällchen S.-S.',   d:'Süß-Sauer',       p:10.00,e:'🥩'},
     {id:404,n:'63 - Schwein Chop Suey',        d:'Mit Gemüse',      p:9.10, e:'🥩'},
-    {id:405,n:'64 - Zweimal Gebrat. Schwein',  d:'Doppelt',         p:10.00,e:'🥩'},
+    {id:405,n:'64 - Zweimal Gebrat. Schwein',  d:'Doppelt gebraten',p:10.00,e:'🥩'},
     {id:406,n:'65 - Schwein Morchen & Bambus', d:'Klassisch',       p:9.90, e:'🥩'},
     {id:407,n:'66 - Schwein Indisch',          d:'Curry Sauce',     p:9.60, e:'🥩'},
     {id:408,n:'67 - Schwein mit Pakchoy',      d:'Mit Gemüse',      p:9.60, e:'🥩'},
@@ -776,28 +804,28 @@ const MENU = [
     {id:701,n:'70 - Seelachs Süß-Sauer',   d:'Knusprig',    p:11.20,e:'🐟'},
     {id:702,n:'71 - Seelachs Pikant',      d:'Scharf',      p:11.20,e:'🐟'},
     {id:703,n:'72 - Seelachs Thai',        d:'Thai Art',    p:11.60,e:'🐟'},
-    {id:704,n:'73 - Garnelen Süß-Sauer',   d:'Gebacken',    p:16.00,e:'🦐',pop:true},
-    {id:705,n:'74 - Garnelen Thai-Curry',  d:'Thai Curry',  p:16.50,e:'🦐'},
+    {id:704,n:'73 - Garnelen Süß-Sauer',   d:'Gebacken',    p:16.00,e:'🦐'},
+    {id:705,n:'74 - Garnelen Thai-Curry',  d:'Thai Curry',  p:16.50,e:'🦐',pop:true,hot:true},
   ]},
   { id:'spez', label:'Spezialitäten', icon:'⭐', items:[
-    {id:801,n:'H1 – Halong Garnelen',   d:'Hausrezept', p:15.00,e:'🦐',pop:true},
+    {id:801,n:'H1 – Halong Garnelen',   d:'Hausrezept', p:15.00,e:'🦐',pop:true,hot:true},
     {id:802,n:'H2 – Hanoi Thapcam',     d:'Hausrezept', p:14.70,e:'🍽️'},
     {id:803,n:'H3 – Ente NEW',          d:'Neu',        p:15.10,e:'🦆',pop:true},
     {id:804,n:'H4 – Kn. Hähnchen Erd.', d:'Erdnuss',    p:12.90,e:'🍗'},
-    {id:805,n:'H5 – Hanoi Curry',       d:'Hausrezept', p:12.40,e:'🍛'},
+    {id:805,n:'H5 – Hanoi Curry',       d:'Hausrezept', p:12.40,e:'🍛',hot:true},
     {id:806,n:'H6 – Halong Spez.',      d:'Hausrezept', p:14.80,e:'🍽️'},
-    {id:807,n:'H7 – Hanoi Ente',        d:'Spezial',    p:15.80,e:'🦆',pop:true},
-    {id:808,n:'H8 – Tom Xao',           d:'Hausrezept', p:17.00,e:'🦐'},
+    {id:807,n:'H7 – Hanoi Ente',        d:'Spezial',    p:15.80,e:'🦆'},
+    {id:808,n:'H8 – Tom Xao',           d:'Hausrezept', p:17.00,e:'🦐',hot:true},
     {id:809,n:'H9 – Thang Long Ente',   d:'Spezial',    p:15.20,e:'🦆'},
     {id:810,n:'H10 – Hanoi NEW',        d:'Neu',        p:15.00,e:'🍽️'},
-    {id:811,n:'H11 – Ga Chien',         d:'Gebraten',   p:12.90,e:'🍗'},
+    {id:811,n:'H11 – Ga Chien',         d:'Gebraten',   p:12.90,e:'🍗',hot:true},
     {id:812,n:'H12 – Tom Thap Cam',     d:'Garnelen',   p:17.70,e:'🦐',pop:true},
   ]},
   { id:'veg', label:'Vegetarisch', icon:'🌿', items:[
     {id:901,n:'80 - Tofu Tomatensauce', d:'Mit Tomate',  p:9.30,e:'🍅',veg:true},
     {id:902,n:'81 - Tofu mit Gemüse',   d:'Frisch',      p:9.30,e:'🥦',veg:true},
-    {id:903,n:'82 - Bratreis Tofu',     d:'Gebratener Reis',p:9.60,e:'🍚',veg:true},
-    {id:904,n:'83 - Tofu Thai-Curry',   d:'Thai Curry',  p:9.60,e:'🍛',veg:true},
+    {id:903,n:'82 - Bratreis Tofu',     d:'Gebratener Reis',p:9.60,e:'🍚',veg:true,pop:true},
+    {id:904,n:'83 - Tofu Thai-Curry',   d:'Thai Curry',  p:9.60,e:'🍛',veg:true,hot:true},
     {id:905,n:'84 - Tofu Pakchoy',      d:'Mit Gemüse',  p:9.60,e:'🥬',veg:true},
     {id:906,n:'85 - Bratnudeln Tofu',   d:'Gebratene Nudeln',p:9.60,e:'🍜',veg:true},
     {id:907,n:'86 - Bratnudeln Gemüse', d:'Nur Gemüse',  p:6.70,e:'🍜',veg:true},
@@ -808,9 +836,9 @@ const MENU = [
     {id:1002,n:'91 - Bratnudeln Hühner',      d:'Hühnerfleisch',p:9.60, e:'🍜'},
     {id:1003,n:'92 - Bratnudeln Schwein',     d:'Schwein',      p:9.60, e:'🍜'},
     {id:1004,n:'93 - Bratnudeln Rind',        d:'Rindfleisch',  p:10.60,e:'🍜'},
-    {id:1005,n:'94 - Bratnudeln Fleisch-Mix', d:'Gemischt',     p:10.90,e:'🍜'},
-    {id:1006,n:'94 - Bratnudeln Garnelen',    d:'Garnelen',     p:12.60,e:'🍜'},
-    {id:1007,n:'96 - Bratnudeln Ente',        d:'Entenfleisch', p:12.10,e:'🍜'},
+    {id:1005,n:'94 - Bratnudeln Fleisch-Mix', d:'Gemischt',     p:10.90,e:'🍜',pop:true},
+    {id:1006,n:'95 - Bratnudeln Garnelen',    d:'Garnelen',     p:12.60,e:'🍜'},
+    {id:1007,n:'96 - Bratnudeln Ente',        d:'Knusprig Ente',p:12.10,e:'🍜'},
     {id:1008,n:'98 - Bratnudeln Hühner Curry',d:'Mit Curry',    p:9.70, e:'🍜'},
     {id:1009,n:'99 - Bratnudeln Hühner Teig', d:'Im Teig',      p:10.10,e:'🍜'},
   ]},
@@ -820,13 +848,13 @@ const MENU = [
     {id:1103,n:'102 - Bratreis Schwein',      d:'Schwein',       p:9.60, e:'🍚'},
     {id:1104,n:'103 - Bratreis Rind',         d:'Rindfleisch',   p:10.60,e:'🍚'},
     {id:1105,n:'104 - Bratreis Fleisch-Mix',  d:'Gemischt',      p:10.90,e:'🍚'},
-    {id:1106,n:'105 - Bratreis Garnelen',     d:'Garnelen',      p:12.60,e:'🍚'},
-    {id:1107,n:'106 - Bratreis Ente',         d:'Entenfleisch',  p:12.10,e:'🍚'},
+    {id:1106,n:'105 - Bratreis Garnelen',     d:'Garnelen',      p:12.60,e:'🍚',pop:true},
+    {id:1107,n:'106 - Bratreis Ente',         d:'Knusprig Ente', p:12.10,e:'🍚'},
     {id:1108,n:'108 - Bratreis Hühner Curry', d:'Mit Curry',     p:9.60, e:'🍚'},
     {id:1109,n:'109 - Bratreis Hühner Teig',  d:'Im Teig',       p:10.10,e:'🍚'},
   ]},
   { id:'get', label:'Getränke', icon:'🥤', items:[
-    {id:1301,n:'D1 - Gebackene Banane',               d:'Mit Honig',         p:4.10,e:'🍌'},
+    {id:1301,n:'D1 - Gebackene Banane',              d:'Mit Honig',         p:4.10,e:'🍌'},
     {id:1302,n:'110 - Cola · Fanta · Sprite',         d:'Softdrinks 0,33l',  p:2.30,e:'🥤'},
     {id:1303,n:'111 - Wasser · Eistee · Apfelschorle',d:'Erfrischungsgetr.', p:2.20,e:'💧'},
     {id:1304,n:'113 - Asiatische Säfte 0,25l',        d:'Exotisch',          p:3.40,e:'🧃'},
@@ -955,10 +983,48 @@ function clearCart() {
   closeCart();
 }
 
+// ═══════════════════════════════════════════════
+// DELIVERY MODE
+// ═══════════════════════════════════════════════
+function setMode(mode) {
+  deliveryMode = mode;
+  const btnL = document.getElementById('btnLieferung');
+  const btnA = document.getElementById('btnAbholung');
+  const info = document.getElementById('modeInfo');
+  const addrLabel = document.getElementById('addressLabel');
+  const addrInput = document.getElementById('custAddress');
+  if (mode === 'lieferung') {
+    btnL.style.background = 'var(--red)'; btnL.style.borderColor = 'var(--red)'; btnL.style.color = '#fff';
+    btnA.style.background = 'var(--s2)';  btnA.style.borderColor = 'var(--border)'; btnA.style.color = 'var(--gray)';
+    info.textContent = '🚗 Lieferung · Mindestbestellwert 16,00 € · Liefergebühr 2,00 €';
+    addrLabel.textContent = 'Lieferadresse *';
+    addrInput.style.display = 'block';
+    addrInput.placeholder = 'Straße, Hausnr., PLZ';
+  } else {
+    btnA.style.background = 'var(--green)'; btnA.style.borderColor = 'var(--green)'; btnA.style.color = '#fff';
+    btnL.style.background = 'var(--s2)';    btnL.style.borderColor = 'var(--border)'; btnL.style.color = 'var(--gray)';
+    info.textContent = '🏠 Abholung · Bereit in ca. 15 Min · Hauptstraße 13, Buxtehude · Kein Mindestbestellwert';
+    addrLabel.textContent = 'Name für Abholung';
+    addrInput.style.display = 'none';
+  }
+  updateCartUI();
+}
+
+// ═══════════════════════════════════════════════
+// SURCHARGE CALCULATION
+// ═══════════════════════════════════════════════
+function calcSurcharge(sub) {
+  if (deliveryMode !== 'lieferung') return 0;
+  if (sub >= MIN_ORDER) return 0;
+  return Math.round((MIN_ORDER - sub) * 100) / 100;
+}
+
 function updateCartUI() {
-  const qty = totalQty();
-  const sub = subtotal();
-  const total = sub + (sub > 0 ? DELIVERY_FEE : 0);
+  const qty   = totalQty();
+  const sub   = subtotal();
+  const surch = calcSurcharge(sub);
+  const fee   = deliveryMode === 'lieferung' && qty > 0 ? DELIVERY_FEE : 0;
+  const total = sub + surch + fee;
 
   // Header badge
   document.getElementById('hCartBadge').textContent = qty;
@@ -970,11 +1036,21 @@ function updateCartUI() {
   document.getElementById('cbCount').textContent = qty;
   document.getElementById('cbTotal').textContent = fmt(total);
 
-  // Sheet
+  // Summary rows
   document.getElementById('sheetSub').textContent = fmt(sub);
+
+  const rowSurch = document.getElementById('rowSurcharge');
+  const rowDel   = document.getElementById('rowDelivery');
+  if (surch > 0) {
+    rowSurch.style.display = 'flex';
+    document.getElementById('sheetSurcharge').textContent = fmt(surch);
+  } else {
+    rowSurch.style.display = 'none';
+  }
+  rowDel.style.display = fee > 0 ? 'flex' : 'none';
   document.getElementById('sheetTotal').textContent = fmt(total);
 
-  // Sheet items
+  // Sheet items list
   const list = document.getElementById('sheetItems');
   if (qty === 0) {
     list.innerHTML = '<div class="sheet-empty">Noch keine Gerichte gewählt 🥢</div>';
@@ -996,22 +1072,41 @@ function updateCartUI() {
     }).join('');
   }
 
-  // WhatsApp button
+  // WhatsApp button — always enabled when cart has items
   const waBtn = document.getElementById('waBtn');
-  waBtn.disabled = sub < MIN_ORDER || qty === 0;
-  if (sub > 0 && sub < MIN_ORDER) {
-    waBtn.textContent = `Noch ${fmt(MIN_ORDER - sub)} bis Mindestbestellung`;
-  } else {
-    waBtn.innerHTML = '<span class="wa-icon">💬</span> Via WhatsApp bestellen';
-  }
+  waBtn.disabled = qty === 0;
+  waBtn.innerHTML = '<span class="wa-icon">💬</span> Via WhatsApp bestellen';
+
 }
 
 // ═══════════════════════════════════════════════
-// WHATSAPP
+// BUILD ORDER SUMMARY
+// ═══════════════════════════════════════════════
+function buildOrderData() {
+  const name    = document.getElementById('custName').value.trim();
+  const address = document.getElementById('custAddress').value.trim();
+  const note    = document.getElementById('custNote').value.trim();
+  const sub     = subtotal();
+  const surch   = calcSurcharge(sub);
+  const fee     = deliveryMode === 'lieferung' ? DELIVERY_FEE : 0;
+  const total   = sub + surch + fee;
+  const isLief  = deliveryMode === 'lieferung';
+  const now     = new Date();
+  const pickupMin = isLief ? 35 : 15;
+  const pickupTime = new Date(now.getTime() + pickupMin * 60000);
+  const tStr = pickupTime.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+  const items = Object.entries(cart).map(([id, q]) => {
+    const it = getItem(+id); if (!it) return null;
+    return { n: it.n, q, p: it.p };
+  }).filter(Boolean);
+  return { name, address, note, sub, surch, fee, total, isLief, tStr, items };
+}
+
+// ═══════════════════════════════════════════════
+// WHATSAPP — direct wa.me, no dialog
 // ═══════════════════════════════════════════════
 function sendWhatsApp() {
   const name = document.getElementById('custName').value.trim();
-  const note = document.getElementById('custNote').value.trim();
   if (!name) {
     document.getElementById('custName').focus();
     document.getElementById('custName').style.borderColor = 'var(--red)';
@@ -1019,32 +1114,48 @@ function sendWhatsApp() {
     showToast('Bitte Ihren Namen eingeben!');
     return;
   }
+  if (deliveryMode === 'lieferung') {
+    const addr = document.getElementById('custAddress').value.trim();
+    if (!addr) {
+      document.getElementById('custAddress').focus();
+      document.getElementById('custAddress').style.borderColor = 'var(--red)';
+      setTimeout(() => document.getElementById('custAddress').style.borderColor = '', 2000);
+      showToast('Bitte Lieferadresse eingeben!');
+      return;
+    }
+  }
 
-  const sub = subtotal();
-  const total = sub + DELIVERY_FEE;
-
+  const d = buildOrderData();
   let msg = `🍜 *BESTELLUNG – Asia Hanoi Imbiss*\n`;
   msg += `━━━━━━━━━━━━━━━━━━━━━\n`;
-  msg += `👤 *Name:* ${name}\n`;
-  if (note) msg += `📝 *Anmerkung:* ${note}\n`;
+  msg += `👤 *Name:* ${d.name}\n`;
+  msg += `📦 *Art:* ${d.isLief ? '🚗 Lieferung' : '🏠 Abholung'}\n`;
+  if (d.isLief && d.address) msg += `📍 *Adresse:* ${d.address}\n`;
+  if (d.note) msg += `📝 *Anmerkung:* ${d.note}\n`;
   msg += `━━━━━━━━━━━━━━━━━━━━━\n`;
   msg += `*Bestellte Gerichte:*\n`;
-
-  Object.entries(cart).forEach(([id, qty]) => {
-    const it = getItem(+id);
-    if (it) msg += `• ${qty}× ${it.n} — ${fmt(it.p * qty)}\n`;
-  });
-
+  d.items.forEach(it => { msg += `• ${it.q}× ${it.n} — ${fmt(it.p * it.q)}\n`; });
   msg += `━━━━━━━━━━━━━━━━━━━━━\n`;
-  msg += `Zwischensumme: ${fmt(sub)}\n`;
-  msg += `Liefergebühr: ${fmt(DELIVERY_FEE)}\n`;
-  msg += `*Gesamt: ${fmt(total)}*\n`;
+  msg += `Speisen: ${fmt(d.sub)}\n`;
+  if (d.surch > 0) msg += `Mindestbestellwert-Ausgleich: ${fmt(d.surch)}\n`;
+  if (d.fee > 0)   msg += `Liefergebühr: ${fmt(d.fee)}\n`;
+  msg += `*Gesamt: ${fmt(d.total)}*\n`;
+  msg += `⏱️ Voraussichtlich ${d.isLief ? 'Lieferung' : 'Abholung'}: ca. ${d.tStr} Uhr\n`;
   msg += `━━━━━━━━━━━━━━━━━━━━━\n`;
-  msg += `Bitte bestätigen Sie meine Bestellung. Danke! 🙏`;
+  msg += `⚠️ Diese Bestellung gilt erst nach Bestätigung durch das Restaurant als angenommen. Danke! 🙏`;
 
-  const encoded = encodeURIComponent(msg);
-  const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encoded}`;
-  window.open(url, '_blank');
+  const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
+
+  // Try to open — if popup blocked, show copy fallback
+  const win = window.open(url, '_blank');
+  if (!win) {
+    // Fallback: copy to clipboard
+    navigator.clipboard.writeText(msg).then(() => {
+      showToast('WhatsApp konnte nicht geöffnet werden – Text kopiert!');
+    }).catch(() => {
+      prompt('Text für WhatsApp kopieren:', msg);
+    });
+  }
 }
 
 // ═══════════════════════════════════════════════
@@ -1129,6 +1240,7 @@ document.getElementById('manifestLink').href = URL.createObjectURL(blob);
 // INIT
 // ═══════════════════════════════════════════════
 buildMenu();
+setMode('lieferung');
 updateCartUI();
 </script>
 </body>

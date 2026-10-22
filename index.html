@@ -611,7 +611,7 @@ body {
         <div class="info-row-icon">🕐</div>
         <div class="info-row-text">
           <div class="info-row-label">Öffnungszeiten</div>
-          <div class="info-row-val">Di – So: 12:00 – 21:00 Uhr<br><span style="font-size:0.78rem;color:var(--gray)">Montag: Ruhetag · Bestellschluss 20:00</span></div>
+          <div class="info-row-val">Di – So: 11:00 – 20:00 Uhr<br><span style="font-size:0.78rem;color:var(--gray)">Montag: Ruhetag · Bestellschluss 20:00</span></div>
         </div>
       </div>
       <div class="info-row">
@@ -786,22 +786,22 @@ body {
 
   <div class="closed-hours">
     <div class="closed-hours-row" id="ch-di">
-      <span class="day">Dienstag</span><span class="time">12:00 – 20:00 Uhr</span>
+      <span class="day">Dienstag</span><span class="time">11:00 – 20:00 Uhr</span>
     </div>
     <div class="closed-hours-row" id="ch-mi">
-      <span class="day">Mittwoch</span><span class="time">12:00 – 20:00 Uhr</span>
+      <span class="day">Mittwoch</span><span class="time">11:00 – 20:00 Uhr</span>
     </div>
     <div class="closed-hours-row" id="ch-do">
-      <span class="day">Donnerstag</span><span class="time">12:00 – 20:00 Uhr</span>
+      <span class="day">Donnerstag</span><span class="time">11:00 – 20:00 Uhr</span>
     </div>
     <div class="closed-hours-row" id="ch-fr">
-      <span class="day">Freitag</span><span class="time">12:00 – 20:00 Uhr</span>
+      <span class="day">Freitag</span><span class="time">11:00 – 20:00 Uhr</span>
     </div>
     <div class="closed-hours-row" id="ch-sa">
-      <span class="day">Samstag</span><span class="time">12:00 – 20:00 Uhr</span>
+      <span class="day">Samstag</span><span class="time">11:00 – 20:00 Uhr</span>
     </div>
     <div class="closed-hours-row" id="ch-so">
-      <span class="day">Sonntag</span><span class="time">12:00 – 20:00 Uhr</span>
+      <span class="day">Sonntag</span><span class="time">11:00 – 20:00 Uhr</span>
     </div>
     <div class="closed-hours-row" id="ch-mo">
       <span class="day">Montag</span><span class="time">Ruhetag</span>
@@ -1368,10 +1368,10 @@ document.getElementById('manifestLink').href = URL.createObjectURL(blob);
 // OPENING HOURS — Auto open/close
 // ═══════════════════════════════════════════════
 // Timezone: Europe/Berlin (UTC+1 winter, UTC+2 summer)
-// Open: Di–So 12:00–21:00, Bestellschluss 20:00
+// Open: Di–So 11:00–20:00, Bestellschluss 20:00
 // Closed: Montag (day 1 in JS = Monday... JS: 0=Sun,1=Mon,...,6=Sat)
 
-const OPEN_HOUR  = 12;   // 12:00
+const OPEN_HOUR  = 11;   // 11:00
 const CLOSE_HOUR = 20;   // Bestellschluss 20:00
 const CLOSE_MIN  = 30;
 
@@ -1401,7 +1401,7 @@ function isOpen() {
 
 function getNextOpenText() {
   const { hour, weekday } = getBerlinTime();
-  if (weekday === 'Montag') return '📅 Nächste Öffnung: Dienstag ab 12:00 Uhr';
+  if (weekday === 'Montag') return '📅 Nächste Öffnung: Dienstag ab 11:00 Uhr';
   if (hour < OPEN_HOUR) return `⏰ Heute ab ${OPEN_HOUR}:00 Uhr wieder geöffnet`;
   // After closing
   const days = ['Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag','Sonntag'];
@@ -1410,7 +1410,7 @@ function getNextOpenText() {
   let nextIdx = (idx + 1) % 7;
   let skipped = 0;
   while (days[nextIdx] === 'Montag' && skipped < 7) { nextIdx = (nextIdx+1)%7; skipped++; }
-  return `📅 Nächste Öffnung: ${days[nextIdx]} ab 12:00 Uhr`;
+  return `📅 Nächste Öffnung: ${days[nextIdx]} ab 11:00 Uhr`;
 }
 
 function highlightToday() {
@@ -1445,7 +1445,7 @@ function checkHours() {
       badge.innerHTML = `<span class="status-badge open"><span class="badge-dot"></span>Geöffnet</span>`;
     }
   } else {
-    badge.innerHTML = `Di–So 12–21 Uhr`;
+    badge.innerHTML = `Di–So 11–20 Uhr`;
   }
 
   // Next open text
